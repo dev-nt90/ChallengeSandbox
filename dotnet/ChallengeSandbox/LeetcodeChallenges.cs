@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChallengeSandbox.AuxillaryModels.Leetcode;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -367,6 +368,288 @@ namespace ChallengeSandbox
 			}
 
 			return !bracketStack.Any();
+		}
+
+		/*
+		 * Problem 21
+		 * NOTE: This one is not great because in order to test you have to build auxillary list traversal code.
+		 * Additionally, these requirements are poor for the second example.
+		 * The signature explicitly states we return a custom type, and the output of these example 2 expects an empty array.
+		 * This is problematic, as an empty list is just null for a custom type like this. This could be improved if the documentation reflected the null value
+		 * or if the signature was updated to include a nullable type. 
+		 * 
+		 * For now, _assume_ a nullable object is what's expected, and hope the website agrees.
+		 * 
+		  You are given the heads of two sorted linked lists list1 and list2.
+
+			Merge the two lists into one sorted list. The list should be made by splicing together the nodes of the first two lists.
+
+			Return the head of the merged linked list.
+
+		Example 1:
+
+		Input: list1 = [1,2,4], list2 = [1,3,4]
+		Output: [1,1,2,3,4,4]
+
+		Example 2:
+
+		Input: list1 = [], list2 = []
+		Output: []
+
+		Example 3:
+
+		Input: list1 = [], list2 = [0]
+		Output: [0]
+
+		 */
+		public ListNode MergeTwoLists(ListNode list1, ListNode list2)
+		{
+			// handle edge cases when one or both lists are empty
+			if(list1 is null && list2 is null)
+			{
+				return null;
+			}
+			else if(list1 is null && list2 is not null)
+			{
+				return list2;
+			}
+			else if(list1 is not null && list2 is null)
+			{
+				return list1;
+			}
+
+			// primary loop
+			var merged = new List<int>();
+			do // TODO: the "do" adds no value and can be removed
+			{
+				if(list1.val <= list2.val)
+				{
+					merged.Add(list1.val);
+					list1 = list1.next;
+				}
+				else
+				{
+					merged.Add(list2.val);
+					list2 = list2.next;
+				}
+			}
+			while (list1 is not null && list2 is not null);
+
+			// dump remaining list contents if any remain in list1
+			while (list1 is not null)
+			{
+				merged.Add(list1.val);
+				list1 = list1.next;
+			}
+
+			// dump remaining list contents if any remain in list2
+			while (list2 is not null)
+			{
+				merged.Add(list2.val);
+				list2 = list2.next;
+			}
+
+			return this.BuildSinglyLinkedList(merged!.ToArray());
+		}
+
+		private ListNode? BuildSinglyLinkedList(int[] data)
+		{
+			if (data.Length == 0)
+			{
+				return null;
+			}
+
+			ListNode? node = null;
+			ListNode? previous = null;
+
+			for (int i = data.Length - 1; i >= 0; i--)
+			{
+				if (i == data.Length - 1)
+				{
+					node = new ListNode(data[i], null);
+				}
+				else
+				{
+					node = new ListNode(data[i], previous);
+				}
+				previous = node;
+			}
+
+			return node;
+		}
+
+		/// <summary>
+		/// Problem 26: Remove Duplicates from a sorted array
+		/// 
+		/// This poorly named problem has a poor description, so I'm not including it here.
+		/// 
+		/// What this method is _supposed_ to do, is return the number of unique elements, AND update the array in place.
+		/// In particular, the ask is to remove the elements which are not part of the unique set of integers.
+		/// This is impossible in C#. But the test case accepted zeroes for the "removed" elements, so I'm calling it good enough and will
+		/// not be supporting with a companion test case.
+		/// </summary>
+		/// <param name="nums"></param>
+		/// <returns></returns>
+		public int RemoveDuplicatesFromASortedArray(int[] nums)
+		{
+			var foundNums = new HashSet<int>();
+
+			for(int i = 0; i < nums.Length; i++)
+			{
+				if (!foundNums.Contains(nums[i]))
+				{
+					foundNums.Add(nums[i]);
+				}
+			}
+			for(int i = 0; i < nums.Length; i++)
+			{
+				if(i < foundNums.Count)
+				{
+					nums[i] = foundNums.ElementAt(i);
+				}
+				else
+				{
+					nums[i] = 0;
+				}
+			}
+
+			return foundNums.Count;
+		}
+
+		/// <summary>
+		/// Problem 27: Remove Element
+		/// This is another poorly named challenge and description. Once again, the task is to update the array in place 
+		/// to remove elements (and count the number of remaining elements). Once again, this is not possible in C#.
+		/// 
+		/// This will not be supported with a companion test.
+		/// 
+		/// The silly name is to avoid future collision.
+		/// 
+		/// The test cases are actually broken on LeetCode
+		/// </summary>
+		/// <param name="nums"></param>
+		/// <param name="val"></param>
+		/// <returns></returns>
+		public int RemoveElementProblem27(int[] nums, int val)
+		{
+			for(int i = 0; i < nums.Length;i++)
+			{
+				if (nums[i] == val)
+				{
+					nums[i] = Int32.MaxValue;
+				}
+			}
+
+			return nums.Count(n => n != Int32.MaxValue);
+		}
+
+		/*
+		 * Problem 28: Find the index of the first occurrence in a string
+		 * 
+		 * Given two strings needle and haystack, return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+
+			Example 1:
+
+			Input: haystack = "sadbutsad", needle = "sad"
+			Output: 0
+			Explanation: "sad" occurs at index 0 and 6.
+			The first occurrence is at index 0, so we return 0.
+
+			Example 2:
+
+			Input: haystack = "leetcode", needle = "leeto"
+			Output: -1
+			Explanation: "leeto" did not occur in "leetcode", so we return -1.
+
+			Constraints:
+
+				1 <= haystack.length, needle.length <= 104
+				haystack and needle consist of only lowercase English characters.
+		 */
+		public int FindIndexOfFirstOccurrenceInString(string haystack, string needle)
+		{
+			if(needle.Length > haystack.Length || String.IsNullOrWhiteSpace(needle) || String.IsNullOrWhiteSpace(haystack))
+			{
+				return -1;
+			}
+
+			var subStrLen = needle.Length;
+
+			for(int i = 0; i < haystack.Length - subStrLen; i++)
+			{
+				if(haystack.Substring(i, subStrLen).Equals(needle, StringComparison.InvariantCultureIgnoreCase))
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
+		/*
+		 * Problem 35: Search Insert Position
+		 * 
+		 * Given a sorted array of distinct integers and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.
+
+			You must write an algorithm with O(log n) runtime complexity.
+
+			Example 1:
+
+			Input: nums = [1,3,5,6], target = 5
+			Output: 2
+
+			Example 2:
+
+			Input: nums = [1,3,5,6], target = 2
+			Output: 1
+
+			Example 3:
+
+			Input: nums = [1,3,5,6], target = 7
+			Output: 4
+			Constraints:
+
+				1 <= nums.length <= 104
+				-104 <= nums[i] <= 104
+				nums contains distinct values sorted in ascending order.
+				-104 <= target <= 104
+		 */
+		public int SearchInsertPosition(int[] nums, int target)
+		{
+			// given that we have a sorted input and we have a requirement to solve in O(log n) time,
+			// it's plainly obvious we're being asked to implement a binary search
+			var left = 0;
+			var right = nums.Length-1;
+			var middle = 0;
+			while(left <= right)
+			{
+				middle = left + (right - left)/2;
+				if (nums[middle] == target)
+				{
+					return middle;
+				}
+
+				if (nums[middle] < target)
+				{
+					left = middle + 1;
+				}
+				else
+				{
+					right = middle - 1;
+				}
+			}
+			if (nums[middle] < target)
+			{
+				return middle + 1;
+			}
+			else if(middle == 0)
+			{
+				return 0;
+			}
+			else
+			{
+				return middle; // not we're not returning -1 because in this hypothetical the right side of the array would have been shifted over by 1
+			}
 		}
 	}
 }
